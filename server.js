@@ -1,52 +1,67 @@
-const express = require('express')
+const express = require('express');
 const app = express();
 const cors = require('cors');
 const config = require('./controllers/db');
+const sql = require('mssql/msnodesqlv8');
 
 app.use(cors());
 app.use(express.json());
 
-app.get('/',(req,res)=>{res.send('hello')})
+app.get('/', (req, res) => {
+  res.send('hello');
+});
 
+app.post('/api', async (req, res) => {
+  const { Amount, Purpose, Name, Phone, City, Message } = req.body;
 
+  if (!Name || !Amount) {
+    return res.status(400).json({
+      success: false,
+      message: 'Name and Amount are required'
+    });
+  }
 
+  try {
+    const pool = await sql.connect(config);
+    await pool.request()
+      .input('AMOUNT', sql.Int, parseInt(Amount, 10))
+      .input('DPURPOSE', sql.VarChar(100), Purpose)
+      .input('NAME', sql.VarChar(100), Name)
+      .input('CITY', sql.VarChar(50), City)
+      .input('MESSAGE', sql.VarChar(500), Message || '')
+      .input('PHONE', sql.VarChar(20), Phone ? Phone.toString() : '')
+      .query(`
+        INSERT INTO DONATION (AMOUNT, DPURPOSE, NAME, CITY, MESSAGE, PHONE) 
+        VALUES (@AMOUNT, @DPURPOSE, @NAME, @CITY, @MESSAGE, @PHONE)
+      `);
 
-app.post('/api',(req,res)=>{
+    const newuser = {
+      Amount,
+      Purpose,
+      Name,
+      Phone,
+      City,
+      Message
+    };
 
+    console.log('Saved Record:', newuser);
 
-const { Amount , Purpose , Name ,Phone , City , Message }= req.body
+    return res.status(201).json({
+      success: true,
+      message: 'Donation recorded successfully',
+      data: newuser
+    });
 
-if(!Name){
+  } catch (error) {
+    console.error('SQL Execution Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Database error',
+      error: error.message
+    });
+  }
+});
 
-return res.status(400).json({
-
-success : fail ,
-message : 'naam add kar lore'
-
-})}
-
-const newuser = {
- Amount :Amount , 
- Purpose:Purpose , 
- Name : Name ,
- Phone : Phone, 
- City : City , 
- Message : Message
-}
-
-console.log('New User Object:', newuser);
-
-return res.status(201).json ({
-
-    success : true ,
-    message : 'ab sahi add kiya na naam lore'
-
-})
-})
-
-
-app.listen(5000,()=>{
-    console.log('server is runing on port 5000')
-})
-
-
+app.listen(5000, () => {
+  console.log('server is runing on port 5000');
+});
