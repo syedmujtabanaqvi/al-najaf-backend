@@ -71,19 +71,24 @@ try {
 
 let pool = await sql.connect(config)
 
-let result = await pool.request().query("select SUM(AMOUNT) AS TOTALAMOUNT from DONATION")
+let result = await pool.request().query(
+  `select count(DONARID) AS T , SUM(AMOUNT) AS TOTALAMOUNT from DONATION`)
  //return res.json(result.recordset);
 
-  let latestId = result.recordset[0].TOTALAMOUNT;
+  let DONARid = result.recordset[0]?.T  ?? 0; 
+  let amount = result.recordset[0]?.TOTALAMOUNT ?? 0;
+  
+  
 
-        res.json({ TOTALAMOUNT: latestId });
+        res.json({ TOTALAMOUNT: amount , DONARid  });
+
 
 }
 catch(err){
 
-  res.send(error.message)
+  res.send(err)
 
-
+  console.error('SQL Execution Error:', err);
 
 }
 
