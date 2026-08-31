@@ -62,6 +62,34 @@ app.post('/api', async (req, res) => {
   }
 });
 
+
+
+
+app.get('/totaldonation', async (req,res)=>{
+
+try {
+
+let pool = await sql.connect(config)
+
+let result = await pool.request().query("select SUM(AMOUNT) AS TOTALAMOUNT from DONATION")
+ //return res.json(result.recordset);
+
+  let latestId = result.recordset[0].TOTALAMOUNT;
+
+        res.json({ TOTALAMOUNT: latestId });
+
+}
+catch(err){
+
+  res.send(error.message)
+
+
+
+}
+
+})
+
+
 app.listen(5000, () => {
   console.log('server is runing on port 5000');
 });
