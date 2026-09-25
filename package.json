@@ -19,6 +19,7 @@
   "homepage": "https://github.com/syedmujtabanaqvi/al-najaf-backend#readme",
   "description": "",
   "dependencies": {
+    "cloudinary": "^2.11.0",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "multer": "^2.4.0",
