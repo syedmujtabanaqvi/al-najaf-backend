@@ -9,7 +9,32 @@ route.get('/',(req,res)=>{
     res.send("mera naam mujtaba hai")
 })
 
+route.post("/GETTEAMDATA" , async (req,res)=>{
+    try{
+    const { NAME , CNIC } = req.body
+ 
+    const pool = await sql.connect(config);
+    await pool.request()
+    .input('NAME', sql.VarChar(50), NAME)
+    .input('BLOODGROUP', sql.VarChar(3), NAME)
+    .input('CNIC', sql.Int, CNIC)
+    .query(`
+        INSERT INTO MEMBERDATA (NAME , CNIC , BLOODGROUP) VALUES (@NAME, @CNIC, @BLOODGROUP) `);
 
+return res.status(201).json({
+      success: true,
+      message: 'Donation recorded successfully',
+      data: result.recordset[0] 
+    });
+    }
+    catch (error) {
+    console.error("Backend Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Database error"
+    })
+
+}})
 
 route.get("/Team", async (req,res)=>{
 let pool = await sql.connect(config);
